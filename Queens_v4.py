@@ -185,7 +185,6 @@ def user_input_char():
 debug_cv = 0
 
 img = cv.imread(r'.\QueensBoard.jpg')
-#img = cv.imread(r'.\QueensBoard_2.png') #no tiene solución! TODO: ver cómo identificar estos casos
 #img = cv.imread(r'.\QueensBoard_3.jpg')
 #img = cv.imread(r'.\QueensBoard_4.jpg')
 #img = cv.imread(r'.\QueensBoard_5.jpg')
@@ -203,8 +202,8 @@ coords = cv.findNonZero(gray) # Find all non-zero points (text)
 x, y, w, h = cv.boundingRect(coords) # Find minimum spanning bounding box
 img = img[y:y+h, x:x+w] # Croppen image
 
-if debug_cv == 1:
-    cv.imshow("Queens Cropped",img)
+
+cv.imshow("Original board Cropped",img)
 
 
 #Lo que me interesa en primer lugar, es poder definir cuántos cuadrados tengo en la imagen. Para poder armar la grilla
