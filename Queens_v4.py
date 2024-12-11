@@ -140,52 +140,20 @@ def get_board(sqr_cant,contour,plus):
             #dibujo un tablero para verificar los resultados
             board = cv.rectangle(board, (x,y), (x+w,y+h), (int(pix_values[0]),int(pix_values[1]),int(pix_values[2])) , -1)
 
-#img = cv.imread(r'C:\Users\IESz\Documents\Ian\UTN\QueensBoard.jpg')
-#img = cv.imread(r'C:\Users\IESz\Documents\Ian\UTN\QueensBoard_2.png') #no tiene solución! TODO: ver cómo identificar estos casos
-#img = cv.imread(r'C:\Users\IESz\Documents\Ian\UTN\QueensBoard_3.jpg')
-#img = cv.imread(r'C:\Users\IESz\Documents\Ian\UTN\QueensBoard_4.jpg')
-img = cv.imread(r'C:\Users\IESz\Documents\Ian\UTN\QueensBoard_5.jpg')
+img = cv.imread(r'.\QueensBoard.jpg')
+#img = cv.imread(r'.\QueensBoard_2.png') #no tiene solución! TODO: ver cómo identificar estos casos
+#img = cv.imread(r'.\QueensBoard_3.jpg')
+#img = cv.imread(r'.\QueensBoard_4.jpg')
+#img = cv.imread(r'.\QueensBoard_5.jpg')
 
 #Crop the image to take out blank borders and help with detection
 gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 gray = 255*(gray < 128).astype(np.uint8) # To invert the text to white
 cv.imshow("Queens Inverted",gray)
 
-#Take the largest countour and use it as a mask for a first cropp
-countour_g, hierarchies_g = cv.findContours(gray,cv.RETR_LIST,cv.CHAIN_APPROX_NONE)
-#cv.drawContours(gray,countour_g,-1,(0,255,0),1)
-#cv.imshow('Contours Tresh',gray)
-
-values = []
-index = 0
-#gray = cv.cvtColor(gray, cv.COLOR_GRAY2BGR) #just for debug
-for cnts in range(1,len(countour_g)):
-    cnt = countour_g[cnts]
-    values.append(cv.contourArea(cnt))
 
 
-#get de maximun area value
-max_area = max(values)
-#get the position where the max area is (+1 because index starts from 0)
-max_area_contour = values.index(max_area)+1
-
-print(f"max_area = {max_area}")
-print(f"max_area_contour = {max_area_contour}")
-
-#draw the mask in an empty image
-mask = np.zeros(gray.shape[:2],dtype='uint8')
-x,y,w,h = cv.boundingRect(countour_g[max_area_contour])
-x_center = x+(w/2)
-y_center = y+(h/2)
-mask = cv.rectangle(mask, (x,y), (x+w,y+h), (255,255,255) , -1)
-cv.imshow('mask crop',mask)
-
-cropped_image = cv.bitwise_and(gray,mask)
-cv.imshow('cropped_image',cropped_image)
-cv.waitKey(0)
-
-
-coords = cv.findNonZero(mask) # Find all non-zero points (text)
+coords = cv.findNonZero(gray) # Find all non-zero points (text)
 x, y, w, h = cv.boundingRect(coords) # Find minimum spanning bounding box
 img = img[y:y+h, x:x+w] # Croppen image
 cv.imshow("Queens Cropped",img)
