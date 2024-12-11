@@ -1,38 +1,9 @@
 import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
-#from PIL import ImageGrab, Image
-
-"""
-Reglas Queens:
-
-    Cada fila, columna y región coloreada debe contener exactamente un símbolo de corona (reina).
-
-    Los símbolos de corona no se pueden colocar en celdas adyacentes, ni siquiera en diagonal.
-"""
-
-"""TODO: 
-* pasar a objetos: definir clase Detector: hace la detección de contornos (un método), determian tamaño del mapa (otro método), determina color de cada cuadrado (otro mapa)
-                   definir clase Solver: genera el mapa según lo determina el detector, resuelve el juego 
-
-
-* Crear interfaz gráfica
-* tomar imágenes desde clipboard con PIL
-
-img = ImageGrab.grabclipboard()
-print(img)
-# <PIL.JpegImagePlugin.JpegImageFile image mode=RGB size=200x71 at 0x105E68700>
-
-print(isinstance(img, Image.Image))
-# True
-
-print(img.size)
-"""
 
 
 # ***** Function definitions *****#
-
-
 """
 @fn:        plot_image    
 @params:    image and title
@@ -86,7 +57,7 @@ def empty_diagonals(y,x):
 @version:   1.0
 @date:      09-2024
 """
-def get_board(sqr_cant,contour,plus):
+def get_board(sqr_cant,contour,plus,selective):
     global grid
     global board
 
@@ -102,47 +73,84 @@ def get_board(sqr_cant,contour,plus):
         col_index = int(((x_center*cols_rows)/col_nbr))
         row_index = int(((y_center*cols_rows)/row_nbr))
 
-        #only proceed if the row|col of the grid is 0 (i.e.: has no color associated)
-        if grid[0][row_index][col_index] == 0:
+        
+        if selective == 1:
+            #only proceed if the row|col of the grid is 0 (has no color associated)
+            if grid[0][row_index][col_index] == 0:
 
-            filled = np.zeros(img.shape[:2],dtype='uint8')
-            filled = cv.rectangle(filled, (x,y), (x+w,y+h), (255,255,255) , -1)
-            #cv.imshow("filled", filled)
-
-            #filled = cv.cvtColor(filled,cv.COLOR_GRAY2BGR)
-            
-            masked = cv.bitwise_and(img,img,mask=filled) #
-            
-            #cv.circle(masked,coord,10,255,-1)
-            
-            #cv.imshow("masked", masked)
+                filled = np.zeros(img.shape[:2],dtype='uint8')
+                filled = cv.rectangle(filled, (x,y), (x+w,y+h), (255,255,255) , -1)
+                #cv.imshow("filled", filled)
+                #filled = cv.cvtColor(filled,cv.COLOR_GRAY2BGR)
+                
+                masked = cv.bitwise_and(img,img,mask=filled) #
+                
+                #cv.circle(masked,coord,10,255,-1)
+                #cv.imshow("masked", masked)
 
 
-            print(f"masked shape {masked.shape}")
-            print(f"x_center = {int(x_center)}")
-            print(f"y_center = {int(y_center)}")
+                print(f"masked shape {masked.shape}")
+                print(f"x_center = {int(x_center)}")
+                print(f"y_center = {int(y_center)}")
 
-            pix_values = masked[int(y_center),int(x_center)] 
-            
+                pix_values = masked[int(y_center),int(x_center)] 
+                
 
-            #sumo para obtener un valor único (identificador de grupo)
-            group_id = float(pix_values[0]) + float(pix_values[1]) +float(pix_values[2]) #los valores son uint8_t (0-255), entonces si quiero guardar la suma podría haber overflow. Por eso, casteo a una variable de mayor tamaño
+                #sumo para obtener un valor único (identificador de grupo)
+                group_id = float(pix_values[0]) + float(pix_values[1]) +float(pix_values[2]) #los valores son uint8_t (0-255), entonces si quiero guardar la suma podría haber overflow. Por eso, casteo a una variable de mayor tamaño
 
-            print(f"B value sub-{row_index} {col_index} is: {pix_values[0]}")
-            print(f"G value sub-{row_index} {col_index} is: {pix_values[1]}")
-            print(f"R value sub-{row_index} {col_index} is: {pix_values[2]}")
+                print(f"B value sub-{row_index} {col_index} is: {pix_values[0]}")
+                print(f"G value sub-{row_index} {col_index} is: {pix_values[1]}")
+                print(f"R value sub-{row_index} {col_index} is: {pix_values[2]}")
 
-            #guardo el valor correspondiente en la grilla, sólo si estaba vacía
-            grid[0][row_index][col_index] = round(group_id) #
-            #print(grid[0,:,:])
-            #cv.imshow(f"Countour {col}", filled)
-            #cv.imshow(f"Square b {col_index}", masked[:,:,0])
-            #cv.imshow(f"Square g {col_index}", masked[:,:,1])
-            #cv.imshow(f"Square r {col_index}", masked[:,:,2])
-            #cv.waitKey(0)
+                #guardo el valor correspondiente en la grilla, sólo si estaba vacía
+                grid[0][row_index][col_index] = round(group_id) #
+                #print(grid[0,:,:])
+                #cv.imshow(f"Countour {col}", filled)
+                #cv.imshow(f"Square b {col_index}", masked[:,:,0])
+                #cv.imshow(f"Square g {col_index}", masked[:,:,1])
+                #cv.imshow(f"Square r {col_index}", masked[:,:,2])
+                #cv.waitKey(0)
 
-            #dibujo un tablero para verificar los resultados
-            board = cv.rectangle(board, (x,y), (x+w,y+h), (int(pix_values[0]),int(pix_values[1]),int(pix_values[2])) , -1)
+                #dibujo un tablero para verificar los resultados
+                board = cv.rectangle(board, (x,y), (x+w,y+h), (int(pix_values[0]),int(pix_values[1]),int(pix_values[2])) , -1)
+        else:
+                filled = np.zeros(img.shape[:2],dtype='uint8')
+                filled = cv.rectangle(filled, (x,y), (x+w,y+h), (255,255,255) , -1)
+                #cv.imshow("filled", filled)
+                #filled = cv.cvtColor(filled,cv.COLOR_GRAY2BGR)
+                
+                masked = cv.bitwise_and(img,img,mask=filled) #
+                
+                #cv.circle(masked,coord,10,255,-1)
+                #cv.imshow("masked", masked)
+
+
+                print(f"masked shape {masked.shape}")
+                print(f"x_center = {int(x_center)}")
+                print(f"y_center = {int(y_center)}")
+
+                pix_values = masked[int(y_center),int(x_center)] 
+                
+
+                #sumo para obtener un valor único (identificador de grupo)
+                group_id = float(pix_values[0]) + float(pix_values[1]) +float(pix_values[2]) #los valores son uint8_t (0-255), entonces si quiero guardar la suma podría haber overflow. Por eso, casteo a una variable de mayor tamaño
+
+                print(f"B value sub-{row_index} {col_index} is: {pix_values[0]}")
+                print(f"G value sub-{row_index} {col_index} is: {pix_values[1]}")
+                print(f"R value sub-{row_index} {col_index} is: {pix_values[2]}")
+
+                #guardo el valor correspondiente en la grilla, sólo si estaba vacía
+                grid[0][row_index][col_index] = round(group_id) #
+                #print(grid[0,:,:])
+                #cv.imshow(f"Countour {col}", filled)
+                #cv.imshow(f"Square b {col_index}", masked[:,:,0])
+                #cv.imshow(f"Square g {col_index}", masked[:,:,1])
+                #cv.imshow(f"Square r {col_index}", masked[:,:,2])
+                #cv.waitKey(0)
+
+                #dibujo un tablero para verificar los resultados
+                board = cv.rectangle(board, (x,y), (x+w,y+h), (int(pix_values[0]),int(pix_values[1]),int(pix_values[2])) , -1)
 
 
 """
@@ -321,65 +329,14 @@ col_nbr = img.shape[1]
 
 board = np.zeros(img.shape[:2],dtype="uint8")
 board = cv.cvtColor(board,cv.COLOR_GRAY2BGR)
-for cnts in range(sqr_cant+plus_ct):
 
-    cnt = countour_tc[cnts]
-    x,y,w,h = cv.boundingRect(cnt)
-    x_center = x+(w/2)
-    y_center = y+(h/2)
-
-    col_index = int(((x_center*cols_rows)/col_nbr))
-    row_index = int(((y_center*cols_rows)/row_nbr))
-
-    filled = np.zeros(img.shape[:2],dtype='uint8')
-    filled = cv.rectangle(filled, (x,y), (x+w,y+h), (255,255,255) , -1)
-    #cv.imshow("filled", filled)
-
-    #filled = cv.cvtColor(filled,cv.COLOR_GRAY2BGR)
-    
-    masked = cv.bitwise_and(img,img,mask=filled) #
-    
- 
-    coord = (int(x_center),int(y_center))
-    #cv.circle(masked,coord,10,255,-1)
-    
-    #cv.imshow("masked", masked)
-
-
-    print(f"masked shape {masked.shape}")
-    print(f"x_center = {int(x_center)}")
-    print(f"y_center = {int(y_center)}")
-
-    pix_values = masked[int(y_center),int(x_center)] 
-    
-
-    #sumo para obtener un valor único (identificador de grupo)
-    group_id = float(pix_values[0]) + float(pix_values[1]) +float(pix_values[2]) #los valores son uint8_t (0-255), entonces si quiero guardar la suma podría haber overflow. Por eso, casteo a una variable de mayor tamaño
-
-    print(f"B value sub-{row_index} {col_index} is: {pix_values[0]}")
-    print(f"G value sub-{row_index} {col_index} is: {pix_values[1]}")
-    print(f"R value sub-{row_index} {col_index} is: {pix_values[2]}")
-
-    #guardo el valor correspondiente en la grilla
-    grid[0][row_index][col_index] = round(group_id) #
-    #print(grid[0,:,:])
-    #cv.imshow(f"Countour {col}", filled)
-    #cv.imshow(f"Square b {col_index}", masked[:,:,0])
-    #cv.imshow(f"Square g {col_index}", masked[:,:,1])
-    #cv.imshow(f"Square r {col_index}", masked[:,:,2])
-    #cv.waitKey(0)
-
-    #dibujo un tablero para verificar los resultados
-    board = cv.rectangle(board, (x,y), (x+w,y+h), (int(pix_values[0]),int(pix_values[1]),int(pix_values[2])) , -1)
-
-print(grid[0,:,:])
-valid_ids = np.unique(grid[0,:,:]) #obtengo todos los distintos ids (colores) que tengo en mi mapa
-print(f"\nGroup ids: {valid_ids}")
+#call function to recreate the provided board
+get_board(sqr_cant=sqr_cant,contour=countour_tc,plus=plus_ct,selective=0)
 
 #if one or more id is equal to 0, then a portion of the map was left black. So, we use the canny contours to fill that part of the map
-if 0 in valid_ids:
+if 0 in np.unique(grid[0,:,:]):
     print("Some squares were left in blank, parsing with Canny only...")
-    get_board(sqr_cant=sqr_cant,contour=countour_c,plus=plus_canny)
+    get_board(sqr_cant=sqr_cant,contour=countour_c,plus=plus_canny,selective=1)
 
 
 print(grid[0,:,:])
