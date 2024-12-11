@@ -206,17 +206,15 @@ img = img[y:y+h, x:x+w] # Croppen image
 cv.imshow("Original board Cropped",img)
 
 
-#Lo que me interesa en primer lugar, es poder definir cuántos cuadrados tengo en la imagen. Para poder armar la grilla
-#La imagen gris también puede utilizarse para hacer los grupos (de una manera más simple, sin utilizar realmente color)
-
-#1. Paso a blanco y negro
+#First, we need to define how many squares we have on the image, to be able to define the grid
+#A grayscale image can be used to determine the groups (without really using color, in a simpler way)
+#1. convert to grayscale
 img_gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY )
 #cv.imshow("Queens Gray",img_gray)
 #cv.waitKey(0)
 
 
-
-#2. Aplico Threshold para lograr imagen 0-255: todo lo que es negro, queda negro (0), todo lo que no sea negro, queda en 255
+#2. Apply a Threshold to get an image that consists only in pixels with values 0-255: what is black, stays black (0), everything else turns white (255)
 ret, thresh = cv.threshold(img_gray,125,255,cv.THRESH_BINARY)
 
 if debug_cv == 1:
@@ -229,38 +227,37 @@ if debug_cv == 1:
 if debug_cv == 1:
     cv.imshow('Queens thresh+Canny', thresh)
 
-#ahora que tenemos sólo una grilla de cuadrados, debemos determinar cuántos cuadrados tenemos en la imagen
-# deteccion de contornos?
+#Now we have only a square grid, we must the termine the number of squares
+#contour detection
 countour_t, hierarchies_t = cv.findContours(thresh,cv.RETR_LIST,cv.CHAIN_APPROX_NONE)
 
-#podemos visualziar los contornos, dibujando sobre la imagen
+#We can visualize contours drawing over the image
 #thresh = cv.cvtColor(thresh,cv.COLOR_GRAY2BGR)
 #cv.drawContours(thresh,countour_t,-1,(0,255,0),1)
 if debug_cv == 1:
     cv.imshow('Contours Tresh',thresh)
 
 
-#Cannny: hago un procesamiento con Canny en lugar de threshold, ya que por el tipo de imagen, da un mejor resultado
-
-#Canny(imagen a analizar, minVal, maxVal, tamaño del kernel para sacar gradiente (3 por default))
+#Cannny: we also apply a Canny proces, this can give a better result
+#Canny(imagen a analizar, minVal, maxVal, tamaño del kernel para sacar gradiente (default = 3))
 canny = cv.Canny(img,125,175)
 
 ret, canny = cv.threshold(canny,10,255,cv.THRESH_BINARY)
 if debug_cv == 1:
     cv.imshow('Img canny', canny)
 
-#erosion y dilatación para eliminar ruido
-# definimos el kernel que puede ser de tamaño 3, 5  o 7
+#erode y dilate to get rid of noise
+#kernel can be 3, 5  o 7
 kernel_dilat = np.ones((5, 5), np.uint8)
-#realizamos las operaciones
+#we do the opeartions
 canny_dilation = cv.dilate(canny, kernel_dilat, iterations=2)
 if debug_cv == 1:
     cv.imshow('canny_dilation', canny_dilation)
 
-#busco contornos en la imagen canny
+#search contours on Canny image
 countour_c, hierarchies_canny = cv.findContours(canny_dilation,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
 
-#Dibujo los contonrs obtenidos con Canny
+#Draw cotours obtained with Canny
 aux = np.zeros(img.shape[:2],dtype="uint8")
 cv.drawContours(aux,countour_c,-1,(255,255,255),1)
 if debug_cv == 1:
@@ -308,12 +305,12 @@ sqr_cant = int(len(countour_tc)-plus_ct)
 print(f'{sqr_cant} squares present in the map with thresh+canny')
 
 
-#defino el tamaño de columnas y filas
+#define the size of the grid (columns and rows)
 cols_rows = int(np.sqrt(sqr_cant))
 sqr_cant = cols_rows*cols_rows
 print(f'{sqr_cant} squares present in the map')
-#defino un np.array de cols_rows x cols_rows
-grid = np.zeros(shape=[2,cols_rows,cols_rows]) #dos dimensiones: una para utilizar como guía de espacio "libre-ocupado" y otra para llevar los colores
+#define a np.array of cols_rows x cols_rows
+grid = np.zeros(shape=[2,cols_rows,cols_rows]) #two dimensions: one that represents "free-occupied" and other for the color of the square
 print("\n\tTha map: \n\n")
 print(grid)
 
@@ -322,7 +319,7 @@ print(x)
 
 #print(countour_t)
 print(img.shape[:2])
-#cantidad columnas
+#number of columns and rows
 row_nbr = img.shape[0]
 col_nbr = img.shape[1]
 
@@ -365,27 +362,28 @@ if data == "S":
 
     decrement = (1/cols_rows)*0.1 #tasa de decremento de las probabilidades
 
+    #Enables the use of variable probabilities. Leave this value at 0
     use_decrement = 0
     #column = np.random.choice(valid_cols)
     #row = np.random.choice(valid_rows)
 
     print(probabilities[1])
 
-    #columna utilizada por iteración
+    #columns used in the iteration
     iteration_col = []
-    
-    #columans que no puedo utilziar más en una iteración
+
+    #columns that con no longer be used in this iteration
     invalid_cols = [] 
 
-    #mientras aún tenga colores diponibles para completar
+    #While i have available color to iterate
     while valid_ids.size>0:
-        #comienzo por la primera fila y voy bajando
+        #star with the first row, and go down
         for i in range(cols_rows):
 
-            #si seleccioné una columna que sé que es inválida, vuelvo a seleccionar
-            while True and len(invalid_cols) < cols_rows:
-                column = np.random.choice(valid_cols, size=1, p=probabilities[i]) #selecciono la columna en base a las que tengo disponibles para utilizar y la probabilidad
-                if invalid_cols.count(column)==0: #reviso si la columna seleccionada está en la lista de las columnas ya utilizadas
+            #if an invalid column for this iteration (i.e.: an already used column) was selected, then choose again
+            while len(invalid_cols) < cols_rows:
+                column = np.random.choice(valid_cols, size=1, p=probabilities[i]) #choose an available column from the list and based on the probabilities 
+                if invalid_cols.count(column)==0: #check if the selected column is on the list of already used ones
                     break
             #column = np.random.choice(valid_cols,size=1,p=probabilities[i]) #esta función tiene un parámetro que es un array de prbabilidades. Lo que habría que hacer es, para cada i, en sucesivas pasadas, ir modificando estas probabilidades
 
@@ -393,12 +391,12 @@ if data == "S":
             #print(grid[1,i,0:cols_rows-1].sum()) #así reviso filas
             #print(grid[1,0:cols_rows,column].sum()) #así reviso columnas
             
-            #Verificaciones
-            # fila y columna vacía
-            # todas las columnas de la fila, vacías
-            # todas las filas de la columna vacías
-            # el color de la fila columna está sin usar
-            # TODO: adyacentes vacías! 
+            #Validations
+            # row and column must be empty
+            # all the rows from that column must be empty
+            # all the columns from that row must be empty
+            # the color from the picked columns-row is unused
+            # thera are no occupied spaces around the selected column-row
             if grid[1,i,column]==0 and grid[1,i,0:cols_rows-1].sum()==0 and grid[1,0:cols_rows,column].sum()==0 and grid[0,i,column] in valid_ids and (i in valid_rows) and empty_diagonals(i,column):
                 grid[1,i,column]=1
                 #valid_cols = np.delete(valid_cols,np.argwhere(valid_cols==column))
@@ -417,11 +415,12 @@ if data == "S":
             print(" * Solución encontrada *")
             break
         
-        #si salí del for, pero aún me quedan ids desocupados, tengo que hacer otro intento
+        
+        #if we exited the for loop, but still got availables ids, we must do another try
         if valid_ids.size>0:
             #print("probando otra solución")
             #print(f"iteration_col = {iteration_col}")
-            #disminuyo las probabilidades de las columnas seleccionadas para cada fila
+            #if use_decrement = 1, we lower the probabilities of each of the used column-row for the next try
             
             if use_decrement == 1:
                 for j in range(len(iteration_col)):
