@@ -29,6 +29,10 @@ print(isinstance(img, Image.Image))
 print(img.size)
 """
 
+
+# ***** Function definitions *****#
+
+
 """
 @fn:        plot_image    
 @params:    image and title
@@ -140,6 +144,38 @@ def get_board(sqr_cant,contour,plus):
             #dibujo un tablero para verificar los resultados
             board = cv.rectangle(board, (x,y), (x+w,y+h), (int(pix_values[0]),int(pix_values[1]),int(pix_values[2])) , -1)
 
+
+"""
+@fn:        user_input    
+@params:    -
+@brief:     Validates user input
+@author:    I.Sz.
+@version:   1.0
+@date:      09-2024
+"""
+def user_input_char():
+    try:                    #se intenta ejecutar lo que está dentro de la clausula "try"
+        usr_in = str(input())
+        if not(usr_in.isalpha()):
+            raise TypeError
+    #si lo que está dentro de "try" produce error, entonces se ejecuta esto            
+    except TypeError:
+        print("Please, enter a valid input, numbers are not allowed")
+        usr_in = user_input_char()
+
+    print(f"usr_in = {usr_in}")
+    if usr_in == 'S' or usr_in == 'N':
+        return usr_in
+    else:
+        print("Please, enter a valid input")
+        usr_in = user_input_char()
+
+
+# ***** Main Script Starts Here *****#
+
+#variable that enables de output of control prints of intermediate images
+debug_cv = 0
+
 img = cv.imread(r'.\QueensBoard.jpg')
 #img = cv.imread(r'.\QueensBoard_2.png') #no tiene solución! TODO: ver cómo identificar estos casos
 #img = cv.imread(r'.\QueensBoard_3.jpg')
@@ -149,14 +185,18 @@ img = cv.imread(r'.\QueensBoard.jpg')
 #Crop the image to take out blank borders and help with detection
 gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 gray = 255*(gray < 128).astype(np.uint8) # To invert the text to white
-cv.imshow("Queens Inverted",gray)
+
+if debug_cv == 1:
+    cv.imshow("Queens Inverted",gray)
 
 
 
 coords = cv.findNonZero(gray) # Find all non-zero points (text)
 x, y, w, h = cv.boundingRect(coords) # Find minimum spanning bounding box
 img = img[y:y+h, x:x+w] # Croppen image
-cv.imshow("Queens Cropped",img)
+
+if debug_cv == 1:
+    cv.imshow("Queens Cropped",img)
 
 
 #Lo que me interesa en primer lugar, es poder definir cuántos cuadrados tengo en la imagen. Para poder armar la grilla
@@ -171,13 +211,16 @@ img_gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY )
 
 #2. Aplico Threshold para lograr imagen 0-255: todo lo que es negro, queda negro (0), todo lo que no sea negro, queda en 255
 ret, thresh = cv.threshold(img_gray,125,255,cv.THRESH_BINARY)
-cv.imshow('Queens thresh', thresh)
+
+if debug_cv == 1:
+    cv.imshow('Queens thresh', thresh)
 #cv.waitKey(0)
 
 
 #canny = cv.Canny(img,125,175)
 #thresh = thresh+canny
-cv.imshow('Queens thresh+Canny', thresh)
+if debug_cv == 1:
+    cv.imshow('Queens thresh+Canny', thresh)
 
 #ahora que tenemos sólo una grilla de cuadrados, debemos determinar cuántos cuadrados tenemos en la imagen
 # deteccion de contornos?
@@ -186,7 +229,8 @@ countour_t, hierarchies_t = cv.findContours(thresh,cv.RETR_LIST,cv.CHAIN_APPROX_
 #podemos visualziar los contornos, dibujando sobre la imagen
 #thresh = cv.cvtColor(thresh,cv.COLOR_GRAY2BGR)
 #cv.drawContours(thresh,countour_t,-1,(0,255,0),1)
-cv.imshow('Contours Tresh',thresh)
+if debug_cv == 1:
+    cv.imshow('Contours Tresh',thresh)
 
 
 #Cannny: hago un procesamiento con Canny en lugar de threshold, ya que por el tipo de imagen, da un mejor resultado
@@ -195,14 +239,16 @@ cv.imshow('Contours Tresh',thresh)
 canny = cv.Canny(img,125,175)
 
 ret, canny = cv.threshold(canny,10,255,cv.THRESH_BINARY)
-cv.imshow('Img canny', canny)
+if debug_cv == 1:
+    cv.imshow('Img canny', canny)
 
 #erosion y dilatación para eliminar ruido
 # definimos el kernel que puede ser de tamaño 3, 5  o 7
 kernel_dilat = np.ones((5, 5), np.uint8)
 #realizamos las operaciones
 canny_dilation = cv.dilate(canny, kernel_dilat, iterations=2)
-cv.imshow('canny_dilation', canny_dilation)
+if debug_cv == 1:
+    cv.imshow('canny_dilation', canny_dilation)
 
 #busco contornos en la imagen canny
 countour_c, hierarchies_canny = cv.findContours(canny_dilation,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
@@ -210,7 +256,8 @@ countour_c, hierarchies_canny = cv.findContours(canny_dilation,cv.RETR_TREE,cv.C
 #Dibujo los contonrs obtenidos con Canny
 aux = np.zeros(img.shape[:2],dtype="uint8")
 cv.drawContours(aux,countour_c,-1,(255,255,255),1)
-cv.imshow('Canny countours', aux)
+if debug_cv == 1:
+    cv.imshow('Canny countours', aux)
 
 filled_countours_c = np.zeros(img.shape[:2],dtype='uint8')
 for cnts in range(1,len(countour_c)):
@@ -222,20 +269,22 @@ for cnts in range(1,len(countour_c)):
     filled_countours_c = cv.rectangle(filled_countours_c, (x,y), (x+w,y+h), (255,255,255) , -1)
 
 
-
-cv.imshow("filled_countours_c",filled_countours_c)
+if debug_cv == 1:
+    cv.imshow("filled_countours_c",filled_countours_c)
 
 print(f'{len(countour_t)} threshold countour(s) fount!')
 print(f'{len(countour_c)} canny countour(s) fount!')
 
 
 total_image = cv.bitwise_or(thresh,filled_countours_c)
-cv.imshow("total_image",total_image)
+if debug_cv == 1:
+    cv.imshow("total_image",total_image)
 
 countour_tc, hierarchies_canny = cv.findContours(total_image,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
 aux = np.zeros(img.shape[:2],dtype="uint8")
 cv.drawContours(aux,countour_tc,-1,(255,255,255),1)
-cv.imshow("total_image countours",aux)
+if debug_cv == 1:
+    cv.imshow("total_image countours",aux)
 
 plus_tresh = 2
 plus_canny = 1
@@ -346,8 +395,8 @@ cv.imshow(f"Recreated board", board)
 
 
 #*********** Resolver *************
-print('Start Resolver?')
-data = input()
+print('Start Resolver? Enter "S" to start or "N" to exit')
+data = user_input_char()
 
 if data == "S":
 
@@ -448,5 +497,6 @@ if data == "S":
     cv.waitKey(0)
 
 else:
+    print("*** Press any key to close the program ***")
     cv.imshow(f"Recreated board", board)
     cv.waitKey(0)
