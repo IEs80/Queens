@@ -337,121 +337,126 @@ if 0 in np.unique(grid[0,:,:]):
 
 print(grid[0,:,:])
 valid_ids = np.unique(grid[0,:,:]) #obtengo todos los distintos ids (colores) que tengo en mi mapa
-print(f"\nGroup ids: {valid_ids}")
 
-#A partir de acá, es resolver el problema
-#Reglas de Queens:
-# 1) cada fila, columna y región coloreada debe contener exactamente un símbolo de corona (reina).
-# 2) Los símbolos de corona no se pueden colocar en celdas adyacentes, ni siquiera en diagonal.
-#cv.imshow(f"Real board", img)
-cv.imshow(f"Recreated board", board)
-
-
-#*********** Resolver *************
-print('Start Resolver? Enter "S" to start or "N" to exit')
-data = user_input_char()
-
-if data == "S":
-
-
-    #lista de columas y filas válidas
-    valid_rows = np.arange(0,cols_rows) #filas disponibles para usar
-    valid_cols = np.arange(0,cols_rows) #columnas disponibles para usar
-
-    probabilities = (1/cols_rows)*np.ones((cols_rows,cols_rows)) #distribucion unfirme
-
-    decrement = (1/cols_rows)*0.1 #tasa de decremento de las probabilidades
-
-    #Enables the use of variable probabilities. Leave this value at 0
-    use_decrement = 0
-    #column = np.random.choice(valid_cols)
-    #row = np.random.choice(valid_rows)
-
-    print(probabilities[1])
-
-    #columns used in the iteration
-    iteration_col = []
-
-    #columns that con no longer be used in this iteration
-    invalid_cols = [] 
-
-    #While i have available color to iterate
-    while valid_ids.size>0:
-        #star with the first row, and go down
-        for i in range(cols_rows):
-
-            #if an invalid column for this iteration (i.e.: an already used column) was selected, then choose again
-            while len(invalid_cols) < cols_rows:
-                column = np.random.choice(valid_cols, size=1, p=probabilities[i]) #choose an available column from the list and based on the probabilities 
-                if invalid_cols.count(column)==0: #check if the selected column is on the list of already used ones
-                    break
-            #column = np.random.choice(valid_cols,size=1,p=probabilities[i]) #esta función tiene un parámetro que es un array de prbabilidades. Lo que habría que hacer es, para cada i, en sucesivas pasadas, ir modificando estas probabilidades
-
-
-            #print(grid[1,i,0:cols_rows-1].sum()) #así reviso filas
-            #print(grid[1,0:cols_rows,column].sum()) #así reviso columnas
-            
-            #Validations
-            # row and column must be empty
-            # all the rows from that column must be empty
-            # all the columns from that row must be empty
-            # the color from the picked columns-row is unused
-            # thera are no occupied spaces around the selected column-row
-            if grid[1,i,column]==0 and grid[1,i,0:cols_rows-1].sum()==0 and grid[1,0:cols_rows,column].sum()==0 and grid[0,i,column] in valid_ids and (i in valid_rows) and empty_diagonals(i,column):
-                grid[1,i,column]=1
-                #valid_cols = np.delete(valid_cols,np.argwhere(valid_cols==column))
-                #valid_rows = np.delete(valid_rows,np.argwhere(valid_rows==i))
-                valid_ids = np.delete(valid_ids,np.argwhere(valid_ids==grid[0,i,column]))
-                iteration_col.append([i,column[0]])
-                invalid_cols.append(column[0])
-                print(f"invalid_col = {invalid_cols}")
-                print(f"len(invalid_cols) = {len(invalid_cols)}")
-                print(f"cols_rows = {cols_rows}")
-                #print(valid_ids)
-                #print(f"columns = {column}")
-            if valid_cols.size<=0:
-                break
-        if valid_ids.size<=0 or len(invalid_cols) == cols_rows:
-            print(" * Solución encontrada *")
-            break
-        
-        
-        #if we exited the for loop, but still got availables ids, we must do another try
-        if valid_ids.size>0:
-            #print("probando otra solución")
-            #print(f"iteration_col = {iteration_col}")
-            #if use_decrement = 1, we lower the probabilities of each of the used column-row for the next try
-            
-            if use_decrement == 1:
-                for j in range(len(iteration_col)):
-                    #print(f"iteration_col[j] = {iteration_col[j]}")
-                    y = iteration_col[j][0] #row
-                    x = iteration_col[j][1] #col 
-                    #print(f"x = {x}")
-                    #print(f"y = {y}")
-                    probabilities[y,x] = probabilities[y,x]-decrement
-                    if probabilities[y,x]<0:
-                        probabilities[y,x] = 0.1 #no uso probabilidad 0, para que siempre alguna chance tengan de salir. 
-                    probabilities[y] /= np.sum(probabilities[y]) 
-
-                    print(f"probabilites = {probabilities}")
-                    #probabilities[iteration_col[j]] /= np.sum(probabilities[iteration_col[j]])
-
-            valid_ids = np.unique(grid[0,:,:])
-            invalid_cols = [] #reinicio invalid cols
-            #valid_rows = np.arange(0,cols_rows-1)
-            #valid_cols = np.arange(0,cols_rows-1) 
-            grid[1,:,:] = 0 #reinicio la grilla
-        
-        
-    print(grid[1,:,:])
-    print("\n\n")
-    print(grid[0,:,:])
-    #print(iteration_col)
-
-    cv.waitKey(0)
-
+if 0 in valid_ids:
+    print(f"\*** The board couldn't be parsed. You may try again cropping your image better. Execution aborted.")
 else:
-    print("*** Press any key to close the program ***")
+
+    print(f"\nGroup ids: {valid_ids}")
+
+    #A partir de acá, es resolver el problema
+    #Reglas de Queens:
+    # 1) cada fila, columna y región coloreada debe contener exactamente un símbolo de corona (reina).
+    # 2) Los símbolos de corona no se pueden colocar en celdas adyacentes, ni siquiera en diagonal.
+    #cv.imshow(f"Real board", img)
     cv.imshow(f"Recreated board", board)
-    cv.waitKey(0)
+
+
+    #*********** Resolver *************
+    print('Start Resolver? Enter "S" to start or "N" to exit')
+    data = user_input_char()
+
+    if data == "S":
+
+
+        #lista de columas y filas válidas
+        valid_rows = np.arange(0,cols_rows) #filas disponibles para usar
+        valid_cols = np.arange(0,cols_rows) #columnas disponibles para usar
+
+        probabilities = (1/cols_rows)*np.ones((cols_rows,cols_rows)) #distribucion unfirme
+
+        decrement = (1/cols_rows)*0.1 #tasa de decremento de las probabilidades
+
+        #Enables the use of variable probabilities. Leave this value at 0
+        use_decrement = 0
+        #column = np.random.choice(valid_cols)
+        #row = np.random.choice(valid_rows)
+
+        print(probabilities[1])
+
+        #columns used in the iteration
+        iteration_col = []
+
+        #columns that con no longer be used in this iteration
+        invalid_cols = [] 
+
+        #While i have available color to iterate
+        while valid_ids.size>0:
+            #star with the first row, and go down
+            for i in range(cols_rows):
+
+                #if an invalid column for this iteration (i.e.: an already used column) was selected, then choose again
+                while len(invalid_cols) < cols_rows:
+                    column = np.random.choice(valid_cols, size=1, p=probabilities[i]) #choose an available column from the list and based on the probabilities 
+                    if invalid_cols.count(column)==0: #check if the selected column is on the list of already used ones
+                        break
+                #column = np.random.choice(valid_cols,size=1,p=probabilities[i]) #esta función tiene un parámetro que es un array de prbabilidades. Lo que habría que hacer es, para cada i, en sucesivas pasadas, ir modificando estas probabilidades
+
+
+                #print(grid[1,i,0:cols_rows-1].sum()) #así reviso filas
+                #print(grid[1,0:cols_rows,column].sum()) #así reviso columnas
+                
+                #Validations
+                # row and column must be empty
+                # all the rows from that column must be empty
+                # all the columns from that row must be empty
+                # the color from the picked columns-row is unused
+                # thera are no occupied spaces around the selected column-row
+                if grid[1,i,column]==0 and grid[1,i,0:cols_rows-1].sum()==0 and grid[1,0:cols_rows,column].sum()==0 and grid[0,i,column] in valid_ids and (i in valid_rows) and empty_diagonals(i,column):
+                    grid[1,i,column]=1
+                    #valid_cols = np.delete(valid_cols,np.argwhere(valid_cols==column))
+                    #valid_rows = np.delete(valid_rows,np.argwhere(valid_rows==i))
+                    valid_ids = np.delete(valid_ids,np.argwhere(valid_ids==grid[0,i,column]))
+                    iteration_col.append([i,column[0]])
+                    invalid_cols.append(column[0])
+                    print(f"invalid_col = {invalid_cols}")
+                    print(f"len(invalid_cols) = {len(invalid_cols)}")
+                    print(f"cols_rows = {cols_rows}")
+                    #print(valid_ids)
+                    #print(f"columns = {column}")
+                if valid_cols.size<=0:
+                    break
+            if valid_ids.size<=0 or len(invalid_cols) == cols_rows:
+                print(" * Solución encontrada *")
+                break
+            
+            
+            #if we exited the for loop, but still got availables ids, we must do another try
+            if valid_ids.size>0:
+                #print("probando otra solución")
+                #print(f"iteration_col = {iteration_col}")
+                #if use_decrement = 1, we lower the probabilities of each of the used column-row for the next try
+                
+                if use_decrement == 1:
+                    for j in range(len(iteration_col)):
+                        #print(f"iteration_col[j] = {iteration_col[j]}")
+                        y = iteration_col[j][0] #row
+                        x = iteration_col[j][1] #col 
+                        #print(f"x = {x}")
+                        #print(f"y = {y}")
+                        probabilities[y,x] = probabilities[y,x]-decrement
+                        if probabilities[y,x]<0:
+                            probabilities[y,x] = 0.1 #no uso probabilidad 0, para que siempre alguna chance tengan de salir. 
+                        probabilities[y] /= np.sum(probabilities[y]) 
+
+                        print(f"probabilites = {probabilities}")
+                        #probabilities[iteration_col[j]] /= np.sum(probabilities[iteration_col[j]])
+
+                valid_ids = np.unique(grid[0,:,:])
+                invalid_cols = [] #reinicio invalid cols
+                #valid_rows = np.arange(0,cols_rows-1)
+                #valid_cols = np.arange(0,cols_rows-1) 
+                grid[1,:,:] = 0 #reinicio la grilla
+            
+            
+        print(grid[1,:,:])
+        print("\n\n")
+        print(grid[0,:,:])
+        #print(iteration_col)
+
+        cv.waitKey(0)
+
+    else:
+        print("*** Press any key to close the program ***")
+        cv.imshow(f"Recreated board", board)
+        cv.waitKey(0)
