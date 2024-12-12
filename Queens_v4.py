@@ -51,7 +51,7 @@ def empty_diagonals(y,x):
 
 """
 @fn:        get_board    
-@params:    number of squares present on the map, contours to use, grid
+@params:    number of squares present on the map, contours to use, a grid, a parameter to only perform the operations over empty squares
 @brief:     gets the color of each square of the map, and translates it into an id to fill the grid
 @author:    I.Sz.
 @version:   1.0
@@ -96,14 +96,16 @@ def get_board(sqr_cant,contour,plus,selective):
                 pix_values = masked[int(y_center),int(x_center)] 
                 
 
-                #sumo para obtener un valor único (identificador de grupo)
+                
+                #sum all to get an unique value (group id)
                 group_id = float(pix_values[0]) + float(pix_values[1]) +float(pix_values[2]) #los valores son uint8_t (0-255), entonces si quiero guardar la suma podría haber overflow. Por eso, casteo a una variable de mayor tamaño
 
                 print(f"B value sub-{row_index} {col_index} is: {pix_values[0]}")
                 print(f"G value sub-{row_index} {col_index} is: {pix_values[1]}")
                 print(f"R value sub-{row_index} {col_index} is: {pix_values[2]}")
 
-                #guardo el valor correspondiente en la grilla, sólo si estaba vacía
+                
+                #store the corresponding value only if the possition was empty
                 grid[0][row_index][col_index] = round(group_id) #
                 #print(grid[0,:,:])
                 #cv.imshow(f"Countour {col}", filled)
@@ -112,7 +114,8 @@ def get_board(sqr_cant,contour,plus,selective):
                 #cv.imshow(f"Square r {col_index}", masked[:,:,2])
                 #cv.waitKey(0)
 
-                #dibujo un tablero para verificar los resultados
+                
+                #draw a board to verify the results
                 board = cv.rectangle(board, (x,y), (x+w,y+h), (int(pix_values[0]),int(pix_values[1]),int(pix_values[2])) , -1)
         else:
                 filled = np.zeros(img.shape[:2],dtype='uint8')
@@ -133,14 +136,14 @@ def get_board(sqr_cant,contour,plus,selective):
                 pix_values = masked[int(y_center),int(x_center)] 
                 
 
-                #sumo para obtener un valor único (identificador de grupo)
+                #sum all to get an unique value (group id)
                 group_id = float(pix_values[0]) + float(pix_values[1]) +float(pix_values[2]) #los valores son uint8_t (0-255), entonces si quiero guardar la suma podría haber overflow. Por eso, casteo a una variable de mayor tamaño
 
                 print(f"B value sub-{row_index} {col_index} is: {pix_values[0]}")
                 print(f"G value sub-{row_index} {col_index} is: {pix_values[1]}")
                 print(f"R value sub-{row_index} {col_index} is: {pix_values[2]}")
 
-                #guardo el valor correspondiente en la grilla, sólo si estaba vacía
+                #store the corresponding value
                 grid[0][row_index][col_index] = round(group_id) #
                 #print(grid[0,:,:])
                 #cv.imshow(f"Countour {col}", filled)
@@ -149,7 +152,7 @@ def get_board(sqr_cant,contour,plus,selective):
                 #cv.imshow(f"Square r {col_index}", masked[:,:,2])
                 #cv.waitKey(0)
 
-                #dibujo un tablero para verificar los resultados
+                #draw a board to verify the results
                 board = cv.rectangle(board, (x,y), (x+w,y+h), (int(pix_values[0]),int(pix_values[1]),int(pix_values[2])) , -1)
 
 
@@ -162,11 +165,11 @@ def get_board(sqr_cant,contour,plus,selective):
 @date:      09-2024
 """
 def user_input_char():
-    try:                    #se intenta ejecutar lo que está dentro de la clausula "try"
+    try:                    
         usr_in = str(input())
         if not(usr_in.isalpha()):
             raise TypeError
-    #si lo que está dentro de "try" produce error, entonces se ejecuta esto            
+          
     except TypeError:
         print("Please, enter a valid input, numbers are not allowed")
         usr_in = user_input_char()
