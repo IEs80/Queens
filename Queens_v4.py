@@ -5,22 +5,6 @@ import matplotlib.pyplot as plt
 
 # ***** Function definitions *****#
 """
-@fn:        plot_image    
-@params:    image and title
-@brief:     plots an image with matplotlib
-@author:    I.Sz.
-@version:   1.0
-@date:      09-2024
-"""
-def plot_image(img,title):
-
-    plt.title(title) 
-    plt.xlabel("x axis") 
-    plt.ylabel("y axis") 
-    plt.imshow(img)
-    plt.show()
-
-"""
 @fn:        empty_diagonals    
 @params:    grid "coodinates"
 @brief:     checks if the diagonals of any given squeare in the grid are empty
