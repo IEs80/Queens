@@ -80,22 +80,15 @@ def get_board(sqr_cant,contour,plus,selective):
 
                 filled = np.zeros(img.shape[:2],dtype='uint8')
                 filled = cv.rectangle(filled, (x,y), (x+w,y+h), (255,255,255) , -1)
-                #cv.imshow("filled", filled)
-                #filled = cv.cvtColor(filled,cv.COLOR_GRAY2BGR)
+
                 
                 masked = cv.bitwise_and(img,img,mask=filled) #
                 
-                #cv.circle(masked,coord,10,255,-1)
-                #cv.imshow("masked", masked)
-
-
                 print(f"masked shape {masked.shape}")
                 print(f"x_center = {int(x_center)}")
                 print(f"y_center = {int(y_center)}")
 
                 pix_values = masked[int(y_center),int(x_center)] 
-                
-
                 
                 #sum all to get an unique value (group id)
                 group_id = float(pix_values[0]) + float(pix_values[1]) +float(pix_values[2]) #los valores son uint8_t (0-255), entonces si quiero guardar la suma podría haber overflow. Por eso, casteo a una variable de mayor tamaño
@@ -107,28 +100,15 @@ def get_board(sqr_cant,contour,plus,selective):
                 
                 #store the corresponding value only if the possition was empty
                 grid[0][row_index][col_index] = round(group_id) #
-                #print(grid[0,:,:])
-                #cv.imshow(f"Countour {col}", filled)
-                #cv.imshow(f"Square b {col_index}", masked[:,:,0])
-                #cv.imshow(f"Square g {col_index}", masked[:,:,1])
-                #cv.imshow(f"Square r {col_index}", masked[:,:,2])
-                #cv.waitKey(0)
-
-                
+      
                 #draw a board to verify the results
                 board = cv.rectangle(board, (x,y), (x+w,y+h), (int(pix_values[0]),int(pix_values[1]),int(pix_values[2])) , -1)
         else:
                 filled = np.zeros(img.shape[:2],dtype='uint8')
                 filled = cv.rectangle(filled, (x,y), (x+w,y+h), (255,255,255) , -1)
-                #cv.imshow("filled", filled)
-                #filled = cv.cvtColor(filled,cv.COLOR_GRAY2BGR)
                 
                 masked = cv.bitwise_and(img,img,mask=filled) #
                 
-                #cv.circle(masked,coord,10,255,-1)
-                #cv.imshow("masked", masked)
-
-
                 print(f"masked shape {masked.shape}")
                 print(f"x_center = {int(x_center)}")
                 print(f"y_center = {int(y_center)}")
@@ -137,7 +117,7 @@ def get_board(sqr_cant,contour,plus,selective):
                 
 
                 #sum all to get an unique value (group id)
-                group_id = float(pix_values[0]) + float(pix_values[1]) +float(pix_values[2]) #los valores son uint8_t (0-255), entonces si quiero guardar la suma podría haber overflow. Por eso, casteo a una variable de mayor tamaño
+                group_id = float(pix_values[0]) + float(pix_values[1]) +float(pix_values[2]) #he pix_values are uint8_t (0-255), si if we sum all in a uint8_t there colud be overflow, so we cast them as floats
 
                 print(f"B value sub-{row_index} {col_index} is: {pix_values[0]}")
                 print(f"G value sub-{row_index} {col_index} is: {pix_values[1]}")
@@ -145,12 +125,6 @@ def get_board(sqr_cant,contour,plus,selective):
 
                 #store the corresponding value
                 grid[0][row_index][col_index] = round(group_id) #
-                #print(grid[0,:,:])
-                #cv.imshow(f"Countour {col}", filled)
-                #cv.imshow(f"Square b {col_index}", masked[:,:,0])
-                #cv.imshow(f"Square g {col_index}", masked[:,:,1])
-                #cv.imshow(f"Square r {col_index}", masked[:,:,2])
-                #cv.waitKey(0)
 
                 #draw a board to verify the results
                 board = cv.rectangle(board, (x,y), (x+w,y+h), (int(pix_values[0]),int(pix_values[1]),int(pix_values[2])) , -1)
@@ -213,8 +187,6 @@ cv.imshow("Original board Cropped",img)
 #A grayscale image can be used to determine the groups (without really using color, in a simpler way)
 #1. convert to grayscale
 img_gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY )
-#cv.imshow("Queens Gray",img_gray)
-#cv.waitKey(0)
 
 
 #2. Apply a Threshold to get an image that consists only in pixels with values 0-255: what is black, stays black (0), everything else turns white (255)
@@ -222,7 +194,7 @@ ret, thresh = cv.threshold(img_gray,125,255,cv.THRESH_BINARY)
 
 if debug_cv == 1:
     cv.imshow('Queens thresh', thresh)
-#cv.waitKey(0)
+
 
 
 #canny = cv.Canny(img,125,175)
@@ -235,8 +207,6 @@ if debug_cv == 1:
 countour_t, hierarchies_t = cv.findContours(thresh,cv.RETR_LIST,cv.CHAIN_APPROX_NONE)
 
 #We can visualize contours drawing over the image
-#thresh = cv.cvtColor(thresh,cv.COLOR_GRAY2BGR)
-#cv.drawContours(thresh,countour_t,-1,(0,255,0),1)
 if debug_cv == 1:
     cv.imshow('Contours Tresh',thresh)
 
@@ -372,8 +342,6 @@ else:
 
         #Enables the use of variable probabilities. Leave this value at 0
         use_decrement = 0
-        #column = np.random.choice(valid_cols)
-        #row = np.random.choice(valid_rows)
 
         print(probabilities[1])
 
@@ -393,12 +361,7 @@ else:
                     column = np.random.choice(valid_cols, size=1, p=probabilities[i]) #choose an available column from the list and based on the probabilities 
                     if invalid_cols.count(column)==0: #check if the selected column is on the list of already used ones
                         break
-                #column = np.random.choice(valid_cols,size=1,p=probabilities[i]) #esta función tiene un parámetro que es un array de prbabilidades. Lo que habría que hacer es, para cada i, en sucesivas pasadas, ir modificando estas probabilidades
-
-
-                #print(grid[1,i,0:cols_rows-1].sum()) #así reviso filas
-                #print(grid[1,0:cols_rows,column].sum()) #así reviso columnas
-                
+               
                 #Validations
                 # row and column must be empty
                 # all the rows from that column must be empty
@@ -415,8 +378,6 @@ else:
                     print(f"invalid_col = {invalid_cols}")
                     print(f"len(invalid_cols) = {len(invalid_cols)}")
                     print(f"cols_rows = {cols_rows}")
-                    #print(valid_ids)
-                    #print(f"columns = {column}")
                 if valid_cols.size<=0:
                     break
             if valid_ids.size<=0 or len(invalid_cols) == cols_rows:
@@ -426,29 +387,20 @@ else:
             
             #if we exited the for loop, but still got availables ids, we must do another try
             if valid_ids.size>0:
-                #print("probando otra solución")
-                #print(f"iteration_col = {iteration_col}")
-                #if use_decrement = 1, we lower the probabilities of each of the used column-row for the next try
                 
                 if use_decrement == 1:
                     for j in range(len(iteration_col)):
-                        #print(f"iteration_col[j] = {iteration_col[j]}")
                         y = iteration_col[j][0] #row
                         x = iteration_col[j][1] #col 
-                        #print(f"x = {x}")
-                        #print(f"y = {y}")
                         probabilities[y,x] = probabilities[y,x]-decrement
                         if probabilities[y,x]<0:
                             probabilities[y,x] = 0.1 #no uso probabilidad 0, para que siempre alguna chance tengan de salir. 
                         probabilities[y] /= np.sum(probabilities[y]) 
 
                         print(f"probabilites = {probabilities}")
-                        #probabilities[iteration_col[j]] /= np.sum(probabilities[iteration_col[j]])
 
                 valid_ids = np.unique(grid[0,:,:])
                 invalid_cols = [] #reinicio invalid cols
-                #valid_rows = np.arange(0,cols_rows-1)
-                #valid_cols = np.arange(0,cols_rows-1) 
                 grid[1,:,:] = 0 #reinicio la grilla
             
             
