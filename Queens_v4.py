@@ -186,7 +186,7 @@ if debug_cv == 1:
 if debug_cv == 1:
     cv.imshow('Queens thresh+Canny', thresh)
 
-#Now we have only a square grid, we must the termine the number of squares
+#Now we have only a square grid, we must determine the number of squares
 #contour detection
 countour_t, hierarchies_t = cv.findContours(thresh,cv.RETR_LIST,cv.CHAIN_APPROX_NONE)
 
@@ -301,10 +301,10 @@ else:
 
     print(f"\nGroup ids: {valid_ids}")
 
-    #A partir de acá, es resolver el problema
-    #Reglas de Queens:
-    # 1) cada fila, columna y región coloreada debe contener exactamente un símbolo de corona (reina).
-    # 2) Los símbolos de corona no se pueden colocar en celdas adyacentes, ni siquiera en diagonal.
+    #From here, we must resolve the game
+    #Queens rules: 
+    # 1) each row, column and coloured region must contain exactly one crown (queen).
+    # 2) the crowns, can't be adjacent to each other
     #cv.imshow(f"Real board", img)
     cv.imshow(f"Recreated board", board)
 
